@@ -43,7 +43,7 @@ public class SkillCardAnimation : MonoBehaviour {
 
     public void Testhello()
     {
- 
+        Debug.Log("hello zhao!!!");
     }
 
 
