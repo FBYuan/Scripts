@@ -2,6 +2,8 @@
 using DG.Tweening;
 using System;
 using VRStandardAssets.Utils;
+using System.Collections;
+using UnityEngine.UI;
 
 public class SkillCard : MonoBehaviour {
     public enum Type
@@ -53,8 +55,15 @@ public class SkillCard : MonoBehaviour {
     private SkillCardManager skillCardManager;
     private SkillCardAnimation cardAnimations;
     private Rigidbody rigid;
-    private MeshRenderer mesh;
+    public MeshRenderer mesh;
     private BoxCollider cardCollider;
+
+	public Transform EnergyPoint;
+    public Image EnergyItem;
+    public Color StartmeshColor;
+    private Color EndmeshColor;
+    private float Timing = 0;
+
 
     void OnEnable()
     {
@@ -72,16 +81,31 @@ public class SkillCard : MonoBehaviour {
         skillCardManager = SkillCardManager.instance;
         cardAnimations = this.GetComponent<SkillCardAnimation>();
         cardCollider = this.GetComponent<BoxCollider>();
+        
+       
         //记录特效初始位置
         if (SpecialEffects!=null)
         {
             StartSpecialPos = SpecialEffects.transform.position;
         }
+        if (EnergyItem!=null)
+        {
+            EndmeshColor = mesh.GetComponent<Renderer>().material.color;
+            mesh.GetComponent<Renderer>().material.color = StartmeshColor;
+            EnergyItem = EnergyItem.transform.GetComponent<Image>();
+        }
+
         isActive = true;
         Initialize();
 	}
 
-
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            CardToCharges();
+        }
+    }
     /// <summary>
     /// 特效移动控制
     /// </summary>
@@ -93,11 +117,11 @@ public class SkillCard : MonoBehaviour {
             if (ismove)
             {
                 SpecialEffects.gameObject.SetActive(true);
-                SpecialEffects.DOMove(objpos.transform.position, 0.5f);
+              //  SpecialEffects.DOMove(objpos.transform.position, 0.5f);
             }
             else
             {
-                SpecialEffects.DOMove(StartSpecialPos, 0.5f);
+                //SpecialEffects.DOMove(StartSpecialPos, 0.5f);
                 SpecialEffects.gameObject.SetActive(false);
             }
         }
@@ -198,5 +222,57 @@ public class SkillCard : MonoBehaviour {
     {
 
     }
+    /// <summary>
+    /// 卡牌充能过程的动画
+    /// </summary>
+    /// <param name="EnergyCost"></param>
+	public void CardToCharges()
+	{
+        StartCoroutine(CardToCharge());
+    }
 
+    IEnumerator CardToCharge()
+    {
+        bool canCharge = false;
+        float duartion = 0.5f;
+      
+        while (!canCharge)
+        {
+            Timing += Time.deltaTime;
+            EnergyPoint.GetComponent<Renderer>().material.color = Color.green;
+            if (Timing < duartion)
+            {
+                EnergyItem.fillAmount = Timing / duartion;
+            }
+            else
+            {
+                Timing = 0f;
+                yield return MeshChangeColor();
+                canCharge = true;
+               
+            }
+            yield return null;
+        }
+    }
+    IEnumerator MeshChangeColor()
+    {
+        float lerp = 0;
+        float MeshDuartion =0.7f;
+        bool isFill = false;
+        while (!isFill)
+        {
+            lerp = Mathf.PingPong(Time.time, MeshDuartion) / MeshDuartion;
+             Debug.Log(lerp);
+            if (lerp < 0.65f)
+            {
+                mesh.GetComponent<Renderer>().material.color = Color.Lerp(StartmeshColor , EndmeshColor, lerp);
+            }
+            else
+            {
+                lerp = 0f;
+                isFill = true;
+            }
+            yield return null;
+        }
+    }
 }
