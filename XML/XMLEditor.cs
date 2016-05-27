@@ -14,7 +14,7 @@ public class XMLEditor : MonoBehaviour {
         FileStream stream = new FileStream(Application.dataPath + "/StreamingFiles/XML/spells_data.xml", FileMode.Create);
         serializer.Serialize(stream, spellsContainer);
         stream.Close();
-    }
+    } 
 
     public void LoadSpells()
     {
